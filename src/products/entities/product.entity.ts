@@ -39,6 +39,12 @@ export class Product {
   @Column('text')
   gender: string;
 
+  @Column('text', {
+    array: true,
+    default: []
+  })
+  tags: string[];
+
   @BeforeInsert()
   checkSlugInsert() {
     if (!this.slug) {
@@ -49,7 +55,7 @@ export class Product {
   }
 
   @BeforeUpdate()
-  checkSlugUpdate(){
-        this.slug = this.slug.toLowerCase().replaceAll(' ', '_').replaceAll("'", '');
+  checkSlugUpdate() {
+    this.slug = this.slug.toLowerCase().replaceAll(' ', '_').replaceAll("'", '');
   }
 }
