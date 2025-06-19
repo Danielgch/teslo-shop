@@ -28,7 +28,6 @@ export class ProductsService {
       const { images = [], ...productDetails } = createProductDto;
 
       const product = this.productRepository.create({ ...productDetails, images: images.map(image => this.productImageRepository.create({ url: image })) });
-      console.log('👺 ~ products.service.ts:18 ~ ProductsService ~ create ~ product:', product)
       await this.productRepository.save(product);
       return {
         ...product, images
@@ -131,7 +130,6 @@ export class ProductsService {
     try {
       return await query.delete().where({}).execute();
     } catch (error) {
-      console.log('👺 ~ products.service.ts:134 ~ ProductsService ~ deleteAllProducts ~ error:', error)
       this.handleDBExceptions(error);
     }
   }
