@@ -23,7 +23,6 @@ export class FilesController {
     @Param('imageName') imageName: string
   ) {
     const path = this.filesService.getStaticProductImage(imageName);
-    console.log('👺 ~ files.controller.ts:19 ~ FilesController ~ path:', path)
 
     res.sendFile(path);
   }
