@@ -5,13 +5,16 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { User } from './entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto, LoginUserDto } from './dto';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -27,7 +30,7 @@ export class AuthService {
       await this.userRepository.save(user);
 
       const { password: _, ...userInfo } = user;
-      return userInfo;
+      return { ...userInfo, token: this.getJwtToken({ id: user.id }) };
       // TODO: JWT
     } catch (error) {
       this.handleDBErrors(error);
@@ -39,15 +42,30 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true }
+      select: { email: true, password: true, id: true }
     });
 
     if (!user) throw new UnauthorizedException("Credentials are not valid (email)");
 
     if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException("Credentials are not valid (password)");
 
-    return user;
-    // TODO: retornar el JWT
+    return {
+      ...user,
+      token: this.getJwtToken({ id: user.id })
+    };
+  }
+
+  async checkAuthStatus(user: User) {
+
+    return {
+      ...user,
+      token: this.getJwtToken({ id: user.id })
+    };
+  }
+
+  private getJwtToken(payload: JwtPayload) {
+    const token = this.jwtService.sign(payload);
+    return token;
   }
 
   private handleDBErrors(error: any): never {
